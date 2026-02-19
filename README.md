@@ -1,17 +1,71 @@
-# mfu_eventify
+# MFU Eventify
 
-A new Flutter project.
+A feature-rich Flutter application for discovering, managing, and saving events. Built with a beautiful UI and smooth user experience across multiple platforms.
+
+## Features
+
+- **Event Discovery** - Browse and search events in your area
+- **Event Management** - Create, edit, and manage events
+- **Save Events** - Bookmark your favorite events for later
+- **Authentication** - Secure user authentication and account management
+- **Settings** - Customize your app preferences and notifications
+- **Cross-Platform Support** - Available on iOS, Android, macOS, Linux, Windows, and Web
+
+## Tech Stack
+
+- **Framework**: Flutter 3.x
+- **Language**: Dart
+- **State Management**: [Your state management solution - e.g., Provider, Riverpod, BLoC]
+- **Backend**: [Your backend service]
+- **Database**: [Your database solution]
+- **UI**: Material Design 3
+
+## Prerequisites
+
+Before running this project, ensure you have:
+
+- Flutter SDK installed (version 3.0 or higher)
+- Dart SDK (comes with Flutter)
+- Android Studio / Xcode (for native development)
+- Git
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Installation
 
-A few resources to get you started if this is your first Flutter project:
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd mfu_eventify
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+2. **Install dependencies**
+    ```bash
+    flutter pub get
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+3. **Generate necessary files**
+    ```bash
+    flutter pub run build_runner build
+
+4. **Generate necessary files**
+    ```bash
+    flutter run
+    
+
+## Project Structure   
+
+lib/
+├── main.dart                 # Entry point
+├── core/
+│   ├── constants/           # App constants
+│   ├── navigation/          # Navigation setup
+│   ├── theme/              # Theme configuration
+│   └── widgets/            # Reusable widgets
+├── features/
+│   ├── auth/               # Authentication feature
+│   ├── events/             # Events feature
+│   ├── saved_events/       # Saved events feature
+│   ├── settings/           # Settings feature
+│   └── welcome/            # Welcome/onboarding feature
+├── models/
+│   └── event_model.dart    # Event data model
+└── services/               # Business logic & API services
