@@ -53,6 +53,7 @@ Before running this project, ensure you have:
 
 ## Project Structure   
 
+```bash
 lib/
 ├── main.dart                 # Entry point
 ├── core/
