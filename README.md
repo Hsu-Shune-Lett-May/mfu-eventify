@@ -53,7 +53,10 @@ Before running this project, ensure you have:
 
 ## Project Structure   
 
+<<<<<<< HEAD
 ```bash
+=======
+>>>>>>> 2d05891 (Update reminder fixes and UI improvements)
 lib/
 ├── main.dart                 # Entry point
 ├── core/

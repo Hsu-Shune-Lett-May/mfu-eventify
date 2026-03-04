@@ -7,26 +7,30 @@ import '../../core/widgets/buttons/primary_button.dart';
 import '../../core/navigation/app_routes.dart';
 import 'widgets/auth_header.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleSignup() {
     if (_formKey.currentState!.validate()) {
       Navigator.pushReplacementNamed(context, AppRoutes.home);
     }
@@ -48,6 +52,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     const AuthHeader(),
                     const SizedBox(height: 32),
                     CustomTextField(
+                      controller: _nameController,
+                      label: AppConstants.fullName,
+                      hint: 'Enter your full name',
+                      prefixIcon: Icons.person_outline,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
                       controller: _emailController,
                       label: AppConstants.email,
                       hint: 'Enter your email',
@@ -56,6 +73,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Please enter a valid email';
                         }
                         return null;
                       },
@@ -71,33 +91,40 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
                         }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: _confirmPasswordController,
+                      label: AppConstants.confirmPassword,
+                      hint: 'Confirm your password',
+                      prefixIcon: Icons.lock_outline,
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
                         return null;
                       },
                     ),
                     const SizedBox(height: 24),
                     PrimaryButton(
-                      text: AppConstants.login,
-                      onPressed: _handleLogin,
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, AppRoutes.forgotPassword);
-                      },
-                      child: const Text(
-                        'Forgot password?',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
+                      text: AppConstants.signup,
+                      onPressed: _handleSignup,
                     ),
                     const SizedBox(height: 32),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          'New to MFU Eventify? ',
+                          'Already have an account? ',
                           style: TextStyle(
                             fontSize: 14,
                             color: AppColors.textTertiary,
@@ -105,10 +132,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.pushNamed(context, AppRoutes.signup);
+                            Navigator.pop(context);
                           },
                           child: const Text(
-                            'Sign up',
+                            'Login',
                             style: TextStyle(
                               fontSize: 14,
                               color: AppColors.primary,
@@ -128,4 +155,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

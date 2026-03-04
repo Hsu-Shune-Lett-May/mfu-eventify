@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/common/gradient_background.dart';
@@ -6,6 +7,8 @@ import '../../core/widgets/inputs/custom_text_field.dart';
 import '../../core/widgets/inputs/custom_dropdown.dart';
 import '../../core/widgets/buttons/primary_button.dart';
 import '../../core/navigation/app_routes.dart';
+import '../../models/event_model.dart';
+import '../../providers/event_provider.dart';
 import 'widgets/bottom_nav_bar.dart';
 
 class CreateEventScreen extends StatefulWidget {
@@ -32,6 +35,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     _locationController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  String _formatDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -80,17 +91,47 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     }
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
+    final provider = context.read<EventProvider>();
+    if (provider.isCreatingEvent) {
+      return;
+    }
+
     if (_formKey.currentState!.validate() &&
         _selectedDate != null &&
         _selectedTime != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Event created successfully!'),
-          backgroundColor: AppColors.primary,
-        ),
+      final event = EventModel(
+        id: 'event_${DateTime.now().millisecondsSinceEpoch}',
+        title: _titleController.text,
+        date: _formatDate(_selectedDate!),
+        time: _selectedTime!.format(context),
+        location: _locationController.text,
+        category: _selectedCategory ?? '',
+        description: _descriptionController.text,
+        organizer: 'MFU',
       );
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+
+      final success = await provider.createEvent(event);
+      if (!mounted) {
+        return;
+      }
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Event created successfully!'),
+            backgroundColor: AppColors.primary,
+          ),
+        );
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to create event'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -203,9 +244,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           },
                         ),
                         const SizedBox(height: 32),
-                        PrimaryButton(
-                          text: AppConstants.createEventButton,
-                          onPressed: _handleSubmit,
+                        Consumer<EventProvider>(
+                          builder: (context, provider, child) {
+                            return PrimaryButton(
+                              text: AppConstants.createEventButton,
+                              isLoading: provider.isCreatingEvent,
+                              onPressed:
+                                  provider.isCreatingEvent ? null : _handleSubmit,
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -246,12 +293,27 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               constraints: const BoxConstraints(),
             ),
             const SizedBox(width: 16),
-            const Text(
-              AppConstants.createEvent,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+            const Expanded(
+              child: Text(
+                AppConstants.createEvent,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.myEvents);
+              },
+              child: const Text(
+                AppConstants.myEvents,
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
               ),
             ),
           ],

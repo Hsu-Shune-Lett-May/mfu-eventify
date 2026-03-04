@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/common/gradient_background.dart';
 import '../../core/widgets/buttons/outline_button.dart';
 import '../../core/widgets/buttons/primary_button.dart';
 import '../../models/event_model.dart';
+import '../../providers/event_provider.dart';
 import 'widgets/set_reminder_modal.dart';
 
 class EventDetailScreen extends StatefulWidget {
@@ -16,17 +18,22 @@ class EventDetailScreen extends StatefulWidget {
 
 class _EventDetailScreenState extends State<EventDetailScreen> {
   late EventModel event;
+  bool _initialized = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_initialized) {
+      return;
+    }
+    _initialized = true;
     // Get event from arguments or use default
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args != null && args is EventModel) {
       event = args;
     } else {
       event = EventModel(
-        id: 1,
+        id: 'default',
         title: 'Career & Job Fair 2026',
         date: 'Feb 15, 2026',
         time: '10:00 AM - 4:00 PM',
@@ -44,40 +51,68 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => SetReminderModal(event: event),
+      builder: (context) => SetReminderModal(
+        event: event,
+        onReminderSet: (remindBefore, reminderLabel) async {
+          return context.read<EventProvider>().setReminderForEvent(
+                eventId: event.id,
+                remindBefore: remindBefore,
+                reminderLabel: reminderLabel,
+              );
+        },
+        onReminderError: () => context.read<EventProvider>().error,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: GradientBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildEventImage(),
-                      const SizedBox(height: 16),
-                      _buildEventHeader(),
-                      const SizedBox(height: 16),
-                      _buildEventInfoCard(),
-                      const SizedBox(height: 16),
-                      _buildDescription(),
-                    ],
+    return Consumer<EventProvider>(
+      builder: (context, provider, child) {
+        final currentEvent =
+            provider.getEventById(event.id) ?? event;
+
+        return Scaffold(
+          body: GradientBackground(
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildEventHeader(currentEvent),
+                          const SizedBox(height: 10),
+                          Text(
+                            currentEvent.isReminderSet
+                                ? 'Reminder Set'
+                                : 'No Reminder',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: currentEvent.isReminderSet
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildEventInfoCard(currentEvent),
+                          const SizedBox(height: 16),
+                          _buildDescription(currentEvent),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  _buildBottomActions(currentEvent),
+                ],
               ),
-              _buildBottomActions(),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -118,23 +153,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 
-  Widget _buildEventImage() {
-    return Container(
-      width: double.infinity,
-      height: 160,
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Icon(
-        Icons.business_center,
-        size: 64,
-        color: AppColors.primary,
-      ),
-    );
-  }
-
-  Widget _buildEventHeader() {
+  Widget _buildEventHeader(EventModel event) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -174,7 +193,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 
-  Widget _buildEventInfoCard() {
+  Widget _buildEventInfoCard(EventModel event) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -244,7 +263,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 
-  Widget _buildDescription() {
+  Widget _buildDescription(EventModel event) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -269,7 +288,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     );
   }
 
-  Widget _buildBottomActions() {
+  Widget _buildBottomActions(EventModel event) {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -292,6 +311,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   text: AppConstants.saveEvent,
                   icon: Icons.bookmark_border,
                   onPressed: () {
+                    context.read<EventProvider>().toggleSaveEvent(event.id);
                     setState(() {
                       event.isSaved = !event.isSaved;
                     });

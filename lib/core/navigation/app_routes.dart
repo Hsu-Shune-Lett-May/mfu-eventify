@@ -6,4 +6,7 @@ class AppRoutes {
   static const String saved = '/saved';
   static const String create = '/create';
   static const String settings = '/settings';
+  static const String signup = '/signup';
+  static const String forgotPassword = '/forgot-password';
+  static const String myEvents = '/my-events';
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/common/gradient_background.dart';
 import '../../core/navigation/app_routes.dart';
-import '../../models/event_model.dart';
+import '../../providers/event_provider.dart';
 import 'widgets/event_card.dart';
 import 'widgets/bottom_nav_bar.dart';
 
@@ -16,13 +17,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedTab = 0;
-  List<EventModel> events = EventModel.getSampleEvents();
-
-  void _toggleSaveEvent(int index) {
-    setState(() {
-      events[index].isSaved = !events[index].isSaved;
-    });
-  }
 
   void _onTabSelected(int index) {
     setState(() {
@@ -31,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     switch (index) {
       case 0:
-        // Already on home
         break;
       case 1:
         Navigator.pushNamed(context, AppRoutes.saved);
@@ -54,20 +47,65 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildHeader(),
               Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(24),
-                  itemCount: events.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: EventCard(
-                        event: events[index],
-                        onSaveToggle: () => _toggleSaveEvent(index),
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.eventDetail,
-                            arguments: events[index],
+                child: Consumer<EventProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.isLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      );
+                    }
+
+                    if (provider.events.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'No events available',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      color: AppColors.primary,
+                      onRefresh: () => provider.refreshEvents(),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(24),
+                        itemCount: provider.events.length,
+                        itemBuilder: (context, index) {
+                          final event = provider.events[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: EventCard(
+                              event: event,
+                              reminderStatus:
+                                  event.isReminderSet ? 'Reminder Set' : 'No Reminder',
+                              hasReminder: event.isReminderSet,
+                              onSaveToggle: () {
+                                provider.toggleSaveEvent(event.id);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      event.isSaved
+                                          ? '"${event.title}" removed from saved'
+                                          : '"${event.title}" saved!',
+                                    ),
+                                    backgroundColor: AppColors.primary,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.eventDetail,
+                                  arguments: event,
+                                );
+                              },
+                            ),
                           );
                         },
                       ),

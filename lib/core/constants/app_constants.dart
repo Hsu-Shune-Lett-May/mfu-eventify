@@ -15,10 +15,13 @@ class AppConstants {
   static const String eventDetails = 'Event Details';
   static const String savedEvents = 'Saved Events';
   static const String createEvent = 'Create Event';
+  static const String myEvents = 'My Events';
   
   // Form Labels
   static const String email = 'Email';
   static const String password = 'Password';
+  static const String confirmPassword = 'Confirm Password';
+  static const String fullName = 'Full Name';
   static const String eventTitle = 'Event Title';
   static const String category = 'Category';
   static const String date = 'Date';
@@ -29,9 +32,14 @@ class AppConstants {
   // Button Labels
   static const String getStarted = 'Get Started';
   static const String login = 'Login';
+  static const String signup = 'Sign Up';
+  static const String resetPassword = 'Reset Password';
+  static const String sendResetLink = 'Send Reset Link';
+  static const String backToLogin = 'Back to Login';
   static const String saveEvent = 'Save Event';
   static const String setReminder = 'Set Reminder';
   static const String createEventButton = 'Create Event';
+  static const String deleteEvent = 'Delete Event';
   static const String cancel = 'Cancel';
   static const String confirm = 'Confirm';
   

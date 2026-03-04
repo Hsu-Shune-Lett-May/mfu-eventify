@@ -5,8 +5,16 @@ import '../../../models/event_model.dart';
 
 class SetReminderModal extends StatefulWidget {
   final EventModel event;
+  final Future<bool> Function(Duration remindBefore, String reminderLabel)
+      onReminderSet;
+  final String? Function()? onReminderError;
 
-  const SetReminderModal({Key? key, required this.event}) : super(key: key);
+  const SetReminderModal({
+    Key? key,
+    required this.event,
+    required this.onReminderSet,
+    this.onReminderError,
+  }) : super(key: key);
 
   @override
   State<SetReminderModal> createState() => _SetReminderModalState();
@@ -17,6 +25,7 @@ class _SetReminderModalState extends State<SetReminderModal> {
   bool showCustomInput = false;
   final TextEditingController customTimeController = TextEditingController();
   String selectedUnit = 'Minutes';
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -322,15 +331,55 @@ class _SetReminderModalState extends State<SetReminderModal> {
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton(
-            onPressed: isEnabled
-                ? () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Reminder set successfully!'),
-                        backgroundColor: AppColors.primary,
-                      ),
+            onPressed: isEnabled && !_isSubmitting
+                ? () async {
+                    final parsed = _parseReminderSelection();
+                    if (parsed == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please select a valid reminder time'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    setState(() {
+                      _isSubmitting = true;
+                    });
+
+                    final success = await widget.onReminderSet(
+                      parsed.$1,
+                      parsed.$2,
                     );
+
+                    if (!mounted) {
+                      return;
+                    }
+
+                    setState(() {
+                      _isSubmitting = false;
+                    });
+
+                    if (success) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Reminder set successfully!'),
+                          backgroundColor: AppColors.primary,
+                        ),
+                      );
+                    } else {
+                      final errorMessage =
+                          widget.onReminderError?.call() ??
+                              'Failed to set reminder';
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(errorMessage),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   }
                 : null,
             style: ElevatedButton.styleFrom(
@@ -346,20 +395,68 @@ class _SetReminderModalState extends State<SetReminderModal> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.notifications, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  AppConstants.confirm,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                if (_isSubmitting) ...[
+                  const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                    ),
                   ),
-                ),
+                ] else ...[
+                  const Icon(Icons.notifications, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppConstants.confirm,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
         ),
       ],
     );
+  }
+
+  (Duration, String)? _parseReminderSelection() {
+    if (selectedReminder != null) {
+      switch (selectedReminder) {
+        case '5min':
+          return (const Duration(minutes: 5), '5 min');
+        case '15min':
+          return (const Duration(minutes: 15), '15 min');
+        case '30min':
+          return (const Duration(minutes: 30), '30 min');
+        case '1hour':
+          return (const Duration(hours: 1), '1 hour');
+        case '3hour':
+          return (const Duration(hours: 3), '3 hours');
+        case '1day':
+          return (const Duration(days: 1), '1 day');
+      }
+    }
+
+    if (customTimeController.text.isNotEmpty) {
+      final value = int.tryParse(customTimeController.text.trim());
+      if (value == null || value <= 0) {
+        return null;
+      }
+
+      switch (selectedUnit) {
+        case 'Minutes':
+          return (Duration(minutes: value), '$value min');
+        case 'Hours':
+          return (Duration(hours: value), '$value hour');
+        case 'Days':
+          return (Duration(days: value), '$value day');
+      }
+    }
+
+    return null;
   }
 }

@@ -7,12 +7,16 @@ class EventCard extends StatelessWidget {
   final EventModel event;
   final VoidCallback onSaveToggle;
   final VoidCallback onTap;
+  final String reminderStatus;
+  final bool hasReminder;
 
   const EventCard({
     Key? key,
     required this.event,
     required this.onSaveToggle,
     required this.onTap,
+    required this.reminderStatus,
+    required this.hasReminder,
   }) : super(key: key);
 
   @override
@@ -79,6 +83,31 @@ class EventCard extends StatelessWidget {
               EventInfoRow(icon: Icons.access_time, text: event.time),
               const SizedBox(height: 8),
               EventInfoRow(icon: Icons.location_on, text: event.location),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Icon(
+                    hasReminder
+                        ? Icons.notifications_active_outlined
+                        : Icons.notifications_off_outlined,
+                    size: 16,
+                    color: hasReminder
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    reminderStatus,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: hasReminder
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
