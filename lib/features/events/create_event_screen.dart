@@ -123,7 +123,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             backgroundColor: AppColors.primary,
           ),
         );
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -149,7 +149,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home));
         break;
       case 1:
         Navigator.pushNamed(context, AppRoutes.saved);
@@ -288,7 +288,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           children: [
             IconButton(
               icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home)),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),
@@ -303,16 +303,31 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 ),
               ),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.myEvents);
-              },
-              child: const Text(
-                AppConstants.myEvents,
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
+            Material(
+              color: AppColors.primaryLight,
+              borderRadius: BorderRadius.circular(20),
+              child: InkWell(
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.myEvents);
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.event_note, size: 18, color: AppColors.primary),
+                      SizedBox(width: 6),
+                      Text(
+                        AppConstants.myEvents,
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -25,7 +25,7 @@ class _SavedEventsScreenState extends State<SavedEventsScreen> {
 
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home));
         break;
       case 1:
         break;
@@ -116,7 +116,7 @@ class _SavedEventsScreenState extends State<SavedEventsScreen> {
           children: [
             IconButton(
               icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home)),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),

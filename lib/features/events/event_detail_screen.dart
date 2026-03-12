@@ -46,8 +46,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     }
   }
 
-  void _showReminderModal() {
-    showModalBottomSheet(
+  void _showReminderModal() async {
+    final result = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -63,6 +63,16 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
         onReminderError: () => context.read<EventProvider>().error,
       ),
     );
+    if (result != null && mounted) {
+      final isSuccess = result == 'success';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isSuccess ? 'Reminder set successfully!' : result),
+          backgroundColor: isSuccess ? AppColors.primary : Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -307,25 +317,50 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           child: Row(
             children: [
               Expanded(
-                child: CustomOutlineButton(
-                  text: AppConstants.saveEvent,
-                  icon: Icons.bookmark_border,
-                  onPressed: () {
-                    context.read<EventProvider>().toggleSaveEvent(event.id);
-                    setState(() {
-                      event.isSaved = !event.isSaved;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          event.isSaved ? 'Event saved!' : 'Event unsaved',
+                child: event.isSaved
+                    ? ElevatedButton.icon(
+                        icon: const Icon(Icons.bookmark, size: 20),
+                        label: const Text(
+                          'Unsave Event',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                        backgroundColor: AppColors.primary,
-                        duration: const Duration(seconds: 2),
+                        onPressed: () {
+                          context.read<EventProvider>().toggleSaveEvent(event.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Event removed from saved events'),
+                              backgroundColor: Colors.red,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                        ),
+                      )
+                    : CustomOutlineButton(
+                        text: AppConstants.saveEvent,
+                        icon: Icons.bookmark_border,
+                        onPressed: () {
+                          context.read<EventProvider>().toggleSaveEvent(event.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Event saved successfully!'),
+                              backgroundColor: AppColors.primary,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
               const SizedBox(width: 12),
               Expanded(

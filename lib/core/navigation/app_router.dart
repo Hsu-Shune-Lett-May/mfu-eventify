@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../features/landing/landing_screen.dart';
 import '../../features/welcome/welcome_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/events/home_screen.dart';
@@ -11,6 +12,10 @@ import 'app_routes.dart';
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+
+      case AppRoutes.landing:
+        return MaterialPageRoute(builder: (_) => const LandingScreen());
+
       case AppRoutes.welcome:
         return MaterialPageRoute(builder: (_) => const WelcomeScreen());
       

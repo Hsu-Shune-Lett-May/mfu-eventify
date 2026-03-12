@@ -357,28 +357,13 @@ class _SetReminderModalState extends State<SetReminderModal> {
                       return;
                     }
 
-                    setState(() {
-                      _isSubmitting = false;
-                    });
-
                     if (success) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Reminder set successfully!'),
-                          backgroundColor: AppColors.primary,
-                        ),
-                      );
+                      Navigator.pop(context, 'success');
                     } else {
                       final errorMessage =
                           widget.onReminderError?.call() ??
                               'Failed to set reminder';
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(errorMessage),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
+                      Navigator.pop(context, errorMessage);
                     }
                   }
                 : null,

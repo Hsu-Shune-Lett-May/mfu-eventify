@@ -27,13 +27,19 @@ class _HomeScreenState extends State<HomeScreen> {
       case 0:
         break;
       case 1:
-        Navigator.pushNamed(context, AppRoutes.saved);
+        Navigator.pushNamed(context, AppRoutes.saved).then((_) {
+          if (mounted) setState(() { _selectedTab = 0; });
+        });
         break;
       case 2:
-        Navigator.pushNamed(context, AppRoutes.create);
+        Navigator.pushNamed(context, AppRoutes.create).then((_) {
+          if (mounted) setState(() { _selectedTab = 0; });
+        });
         break;
       case 3:
-        Navigator.pushNamed(context, AppRoutes.settings);
+        Navigator.pushNamed(context, AppRoutes.settings).then((_) {
+          if (mounted) setState(() { _selectedTab = 0; });
+        });
         break;
     }
   }

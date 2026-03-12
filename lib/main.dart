@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/navigation/app_routes.dart';
+import 'features/landing/landing_screen.dart';
 import 'features/welcome/welcome_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/signup_screen.dart';
@@ -72,8 +73,9 @@ class MFUEventifyApp extends StatelessWidget {
       title: 'MFU Eventify',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      initialRoute: AppRoutes.welcome,
+      initialRoute: AppRoutes.landing,
       routes: {
+        AppRoutes.landing: (context) => const LandingScreen(),
         AppRoutes.welcome: (context) => const WelcomeScreen(),
         AppRoutes.login: (context) => const LoginScreen(),
         AppRoutes.signup: (context) => const SignupScreen(),

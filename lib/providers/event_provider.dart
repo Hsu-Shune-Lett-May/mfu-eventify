@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/event_model.dart';
@@ -204,7 +205,8 @@ class EventProvider extends ChangeNotifier {
       reminderLabel: reminderLabel,
     );
 
-    if (!scheduled) {
+    // On web, notifications aren't supported but we still mark the reminder
+    if (!scheduled && !kIsWeb) {
       _error = _notificationService.lastError ??
           'Unable to schedule reminder. Check logs for details.';
       debugPrint('setReminderForEvent failed: $_error');
