@@ -9,7 +9,7 @@ class EventProvider extends ChangeNotifier {
   final EventRepository _repository;
   final NotificationService _notificationService;
 
-  static const String currentUserId = 'mfu_user_1';
+  final String currentUserId;
 
   List<EventModel> _events = [];
   bool _isLoading = false;
@@ -21,6 +21,7 @@ class EventProvider extends ChangeNotifier {
   EventProvider({
     required EventRepository repository,
     required NotificationService notificationService,
+    required this.currentUserId,
   })  : _repository = repository,
         _notificationService = notificationService;
 

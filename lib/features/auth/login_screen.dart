@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/common/gradient_background.dart';
 import '../../core/widgets/inputs/custom_text_field.dart';
 import '../../core/widgets/buttons/primary_button.dart';
 import '../../core/navigation/app_routes.dart';
+import '../../providers/auth_provider.dart';
 import 'widgets/auth_header.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -26,14 +28,33 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _handleLogin() {
-    if (_formKey.currentState!.validate()) {
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.signIn(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
       Navigator.pushReplacementNamed(context, AppRoutes.home);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage ?? 'Login failed'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
@@ -76,8 +97,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
                     PrimaryButton(
-                      text: AppConstants.login,
-                      onPressed: _handleLogin,
+                      text: isLoading ? 'Logging in...' : AppConstants.login,
+                      onPressed: isLoading ? null : _handleLogin,
                     ),
                     const SizedBox(height: 16),
                     TextButton(
@@ -128,4 +149,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

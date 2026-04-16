@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/common/gradient_background.dart';
 import '../../core/widgets/cards/base_card.dart';
 import '../../core/navigation/app_routes.dart';
+import '../../providers/auth_provider.dart';
 import '../events/widgets/bottom_nav_bar.dart';
 import 'widgets/settings_section.dart';
 import 'widgets/settings_switch_item.dart';
 import 'widgets/settings_menu_item.dart';
+import 'package:mfu_eventify/providers/auth_provider.dart' hide AuthProvider;
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -100,7 +105,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             IconButton(
               icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-              onPressed: () => Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home)),
+              onPressed: () =>
+                  Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home)),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),
@@ -120,6 +126,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildUserProfile() {
+    // Get real user info from Firebase Auth
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = user?.displayName ?? 'MFU Student';
+    final email = user?.email ?? '';
+
+    // Build initials from display name
+    final parts = displayName.trim().split(' ');
+    final initials = parts.length >= 2
+        ? '${parts.first[0]}${parts.last[0]}'.toUpperCase()
+        : displayName.substring(0, displayName.length >= 2 ? 2 : 1).toUpperCase();
+
     return BaseCard(
       child: Row(
         children: [
@@ -130,10 +147,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: AppColors.primary,
               shape: BoxShape.circle,
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'HM',
-                style: TextStyle(
+                initials,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: AppColors.white,
@@ -142,22 +159,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hsu Shune Lett May',
-                  style: TextStyle(
+                  displayName,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
-                  '6731503056@lamduan.mfu.ac.th',
-                  style: TextStyle(
+                  email,
+                  style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
@@ -250,7 +267,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               DropdownButtonFormField<String>(
                 value: defaultReminderTime,
                 decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: AppColors.border),
@@ -261,7 +279,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                    borderSide:
+                        const BorderSide(color: AppColors.primary, width: 2),
                   ),
                 ),
                 items: AppConstants.reminderTimeOptions.map((String value) {
@@ -269,7 +288,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     value: value,
                     child: Text(
                       value,
-                      style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                      style: const TextStyle(
+                          fontSize: 14, color: AppColors.textPrimary),
                     ),
                   );
                 }).toList(),
@@ -311,26 +331,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
       onTap: () {
         showDialog(
           context: context,
-          builder: (context) => AlertDialog(
+          builder: (dialogContext) => AlertDialog(
             title: const Text('Logout'),
             content: const Text('Are you sure you want to logout?'),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(dialogContext),
                 child: const Text('Cancel'),
               ),
               TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.welcome,
-                    (route) => false,
-                  );
+                onPressed: () async {
+                  Navigator.pop(dialogContext); // close dialog first
+                  await context.read<AuthProvider>().signOut();
+                  if (context.mounted) {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.landing,
+                      (route) => false,
+                    );
+                  }
                 },
                 child: const Text(
                   'Logout',
-                  style: TextStyle(color: AppColors.primary),
+                  style: TextStyle(color: Colors.red),
                 ),
               ),
             ],
@@ -349,7 +372,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: const Icon(
               Icons.logout,
               size: 16,
-              color: AppColors.primary,
+              color: Colors.red,
             ),
           ),
           const SizedBox(width: 12),
@@ -358,7 +381,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.primary,
+              color: Colors.red,
             ),
           ),
         ],

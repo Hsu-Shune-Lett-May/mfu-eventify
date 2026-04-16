@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/common/gradient_background.dart';
 import '../../core/widgets/inputs/custom_text_field.dart';
 import '../../core/widgets/buttons/primary_button.dart';
 import '../../core/navigation/app_routes.dart';
+import '../../providers/auth_provider.dart';
 import 'widgets/auth_header.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -30,14 +32,34 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  void _handleSignup() {
-    if (_formKey.currentState!.validate()) {
+  Future<void> _handleSignup() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.signUp(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
       Navigator.pushReplacementNamed(context, AppRoutes.home);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage ?? 'Sign up failed'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
@@ -116,8 +138,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 24),
                     PrimaryButton(
-                      text: AppConstants.signup,
-                      onPressed: _handleSignup,
+                      text: isLoading ? 'Creating account...' : AppConstants.signup,
+                      onPressed: isLoading ? null : _handleSignup,
                     ),
                     const SizedBox(height: 32),
                     Row(
@@ -125,15 +147,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       children: [
                         const Text(
                           'Already have an account? ',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textTertiary,
-                          ),
+                          style: TextStyle(fontSize: 14, color: AppColors.textTertiary),
                         ),
                         GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
+                          onTap: () => Navigator.pop(context),
                           child: const Text(
                             'Login',
                             style: TextStyle(

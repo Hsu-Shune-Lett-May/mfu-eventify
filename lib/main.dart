@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
@@ -18,21 +19,22 @@ import 'features/events/create_event_screen.dart';
 import 'features/events/my_events_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'models/event_model.dart';
+import 'services/auth_service.dart';
 import 'services/firestore_service.dart';
 import 'services/hive_service.dart';
 import 'services/event_repository.dart';
 import 'services/notification_service.dart';
+import 'providers/auth_provider.dart';
 import 'providers/event_provider.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Initialize Hive
   await Hive.initFlutter();
   Hive.registerAdapter(EventModelAdapter());
   await HiveService.init();
@@ -42,7 +44,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Create services
+  final authService = AuthService();
   final firestoreService = FirestoreService();
   final hiveService = HiveService();
   final notificationService = NotificationService();
@@ -54,11 +56,22 @@ void main() async {
   );
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => EventProvider(
-        repository: eventRepository,
-        notificationService: notificationService,
-      )..init(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(authService: authService),
+        ),
+        ChangeNotifierProvider(
+  create: (context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    return EventProvider(
+      repository: eventRepository,
+      notificationService: notificationService,
+      currentUserId: uid,
+    )..init();
+  },
+),
+      ],
       child: const MFUEventifyApp(),
     ),
   );
@@ -73,7 +86,7 @@ class MFUEventifyApp extends StatelessWidget {
       title: 'MFU Eventify',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      initialRoute: AppRoutes.landing,
+      home: const AuthGate(),
       routes: {
         AppRoutes.landing: (context) => const LandingScreen(),
         AppRoutes.welcome: (context) => const WelcomeScreen(),
@@ -86,6 +99,29 @@ class MFUEventifyApp extends StatelessWidget {
         AppRoutes.create: (context) => const CreateEventScreen(),
         AppRoutes.myEvents: (context) => const MyEventsScreen(),
         AppRoutes.settings: (context) => const SettingsScreen(),
+      },
+    );
+  }
+}
+
+// Auth gate: decides where to send the user on app start
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasData) {
+          return const HomeScreen();
+        }
+        return const LandingScreen();
       },
     );
   }

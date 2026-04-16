@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mfu_eventify/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/common/gradient_background.dart';
@@ -24,13 +26,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _handleSendResetLink() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _linkSent = true;
-      });
-    }
+ Future<void> _handleSendResetLink() async {
+  if (!_formKey.currentState!.validate()) return;
+
+  final authProvider = context.read<AuthProvider>();
+  final success = await authProvider.sendPasswordResetEmail(
+    _emailController.text.trim(),
+  );
+
+  if (!mounted) return;
+
+  if (success) {
+    setState(() => _linkSent = true);
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(authProvider.errorMessage ?? 'Failed to send reset email'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
