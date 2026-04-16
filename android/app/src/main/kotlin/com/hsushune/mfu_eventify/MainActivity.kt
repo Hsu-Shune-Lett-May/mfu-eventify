@@ -1,4 +1,4 @@
-package com.example.mfu_eventify
+package com.hsushune.mfu_eventify
 
 import io.flutter.embedding.android.FlutterActivity
 

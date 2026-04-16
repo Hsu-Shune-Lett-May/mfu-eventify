@@ -21,10 +21,7 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for ios - '
@@ -60,4 +57,13 @@ class DefaultFirebaseOptions {
     authDomain: 'mfu-eventify-fd7d8.firebaseapp.com',
     storageBucket: 'mfu-eventify-fd7d8.firebasestorage.app',
   );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyBxbP2wqO-wgkk8RIbSQb7UFQ0CVKevz3c',
+    appId: '1:877116629744:android:fc8305dfc69185f6421835',
+    messagingSenderId: '877116629744',
+    projectId: 'mfu-eventify-v2',
+    storageBucket: 'mfu-eventify-v2.firebasestorage.app',
+  );
+
 }

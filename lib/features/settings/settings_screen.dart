@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:mfu_eventify/services/hive_service.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
@@ -126,16 +127,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildUserProfile() {
-    // Get real user info from Firebase Auth
-    final user = FirebaseAuth.instance.currentUser;
-    final displayName = user?.displayName ?? 'MFU Student';
-    final email = user?.email ?? '';
+  // Try Hive cache first (works offline), then Firebase Auth
+  final hiveUser = HiveService().getUser();
+  final firebaseUser = FirebaseAuth.instance.currentUser;
 
-    // Build initials from display name
-    final parts = displayName.trim().split(' ');
-    final initials = parts.length >= 2
-        ? '${parts.first[0]}${parts.last[0]}'.toUpperCase()
-        : displayName.substring(0, displayName.length >= 2 ? 2 : 1).toUpperCase();
+  final displayName = hiveUser?.name
+      ?? firebaseUser?.displayName
+      ?? 'MFU Student';
+  final email = hiveUser?.email
+      ?? firebaseUser?.email
+      ?? '';
+
+  final parts = displayName.trim().split(' ');
+  final initials = parts.length >= 2
+      ? '${parts.first[0]}${parts.last[0]}'.toUpperCase()
+      : displayName.substring(0, displayName.length >= 2 ? 2 : 1).toUpperCase();
+
 
     return BaseCard(
       child: Row(

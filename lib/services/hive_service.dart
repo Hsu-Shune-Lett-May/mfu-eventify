@@ -1,38 +1,49 @@
 import 'package:hive/hive.dart';
 import '../models/event_model.dart';
+import '../models/user_model.dart';
 
 class HiveService {
   static const String _eventsBoxName = 'events';
   static const String _savedEventsBoxName = 'saved_events';
   static const String _myEventsBoxName = 'my_events';
+  static const String _userBoxName = 'user';         // ← new
 
-  /// Get the events box
   Box<EventModel> get _eventsBox => Hive.box<EventModel>(_eventsBoxName);
-
-  /// Get the saved event IDs box
   Box<String> get _savedBox => Hive.box<String>(_savedEventsBoxName);
-
-  /// Get the current user's created event IDs box
   Box<String> get _myEventsBox => Hive.box<String>(_myEventsBoxName);
+  Box<UserModel> get _userBox => Hive.box<UserModel>(_userBoxName);  // ← new
 
-  /// Open all required Hive boxes
   static Future<void> init() async {
     await Hive.openBox<EventModel>(_eventsBoxName);
     await Hive.openBox<String>(_savedEventsBoxName);
     await Hive.openBox<String>(_myEventsBoxName);
+    await Hive.openBox<UserModel>(_userBoxName);      // ← new
   }
 
-  /// Get all cached events
+  // ─── User Cache ──────────────────────────────────────────────
+
+  Future<void> saveUser(UserModel user) async {
+    await _userBox.put('current_user', user);
+  }
+
+  UserModel? getUser() {
+    return _userBox.get('current_user');
+  }
+
+  Future<void> clearUser() async {
+    await _userBox.delete('current_user');
+  }
+
+  // ─── Events (unchanged) ──────────────────────────────────────
+
   List<EventModel> getEvents() {
     final events = _eventsBox.values.toList();
-    // Apply saved status from the saved box
     for (final event in events) {
       event.isSaved = _savedBox.containsKey(event.id);
     }
     return events;
   }
 
-  /// Cache a list of events (replaces all existing)
   Future<void> cacheEvents(List<EventModel> events) async {
     await _eventsBox.clear();
     final map = <String, EventModel>{};
@@ -42,18 +53,12 @@ class HiveService {
     await _eventsBox.putAll(map);
   }
 
-  /// Add a single event to the cache
   Future<void> cacheEvent(EventModel event) async {
     await _eventsBox.put(event.id, event);
   }
 
-  EventModel? getEventById(String eventId) {
-    return _eventsBox.get(eventId);
-  }
-
-  bool containsEvent(String eventId) {
-    return _eventsBox.containsKey(eventId);
-  }
+  EventModel? getEventById(String eventId) => _eventsBox.get(eventId);
+  bool containsEvent(String eventId) => _eventsBox.containsKey(eventId);
 
   Future<void> updateEvent(EventModel event) async {
     await _eventsBox.put(event.id, event);
@@ -65,7 +70,6 @@ class HiveService {
     await _myEventsBox.delete(eventId);
   }
 
-  /// Toggle saved status for an event
   Future<void> toggleSaved(String eventId) async {
     if (_savedBox.containsKey(eventId)) {
       await _savedBox.delete(eventId);
@@ -74,34 +78,24 @@ class HiveService {
     }
   }
 
-  /// Check if an event is saved
-  bool isSaved(String eventId) {
-    return _savedBox.containsKey(eventId);
-  }
+  bool isSaved(String eventId) => _savedBox.containsKey(eventId);
+  Set<String> getSavedEventIds() => _savedBox.values.toSet();
 
-  /// Get all saved event IDs
-  Set<String> getSavedEventIds() {
-    return _savedBox.values.toSet();
-  }
-
-  /// Get saved events
   List<EventModel> getSavedEvents() {
     final savedIds = getSavedEventIds();
     return _eventsBox.values
         .where((e) => savedIds.contains(e.id))
-        .map((e) => e.copyWith(isSaved: true))
-        .toList();
-  }
+          .map((e) => e.copyWith(isSaved: true))
+          .toList();
+    }
 
-  Future<void> markMyEvent(String eventId) async {
-    await _myEventsBox.put(eventId, eventId);
-  }
+    Future<void> markMyEvent(String eventId) async {
+      await _myEventsBox.put(eventId, eventId);
+    }
 
-  Set<String> getMyEventIds() {
-    return _myEventsBox.values.toSet();
-  }
+    Set<String> getMyEventIds() => _myEventsBox.values.toSet();
 
-  Future<void> unmarkMyEvent(String eventId) async {
-    await _myEventsBox.delete(eventId);
+    Future<void> unmarkMyEvent(String eventId) async {
+      await _myEventsBox.delete(eventId);
+    }
   }
-}

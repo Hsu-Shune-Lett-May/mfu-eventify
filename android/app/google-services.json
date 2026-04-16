@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "877116629744",
+    "project_id": "mfu-eventify-v2",
+    "storage_bucket": "mfu-eventify-v2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877116629744:android:a5b23d6cbdd993a6421835",
+        "android_client_info": {
+          "package_name": "com.example.mfu_eventify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxbP2wqO-wgkk8RIbSQb7UFQ0CVKevz3c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877116629744:android:fc8305dfc69185f6421835",
+        "android_client_info": {
+          "package_name": "com.hsushune.mfu_eventify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxbP2wqO-wgkk8RIbSQb7UFQ0CVKevz3c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -27,7 +27,6 @@ import 'services/notification_service.dart';
 import 'providers/auth_provider.dart';
 import 'providers/event_provider.dart';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -62,15 +61,12 @@ void main() async {
           create: (_) => AuthProvider(authService: authService),
         ),
         ChangeNotifierProvider(
-  create: (context) {
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-    return EventProvider(
-      repository: eventRepository,
-      notificationService: notificationService,
-      currentUserId: uid,
-    )..init();
-  },
-),
+          create: (_) => EventProvider(
+            repository: eventRepository,
+            notificationService: notificationService,
+            currentUserId: FirebaseAuth.instance.currentUser?.uid ?? '',
+          )..init(),
+        ),
       ],
       child: const MFUEventifyApp(),
     ),
@@ -86,8 +82,9 @@ class MFUEventifyApp extends StatelessWidget {
       title: 'MFU Eventify',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const AuthGate(),
+      home: const AuthGate(),  // ← home handles '/' automatically
       routes: {
+        // ✅ none of these should be '/'
         AppRoutes.landing: (context) => const LandingScreen(),
         AppRoutes.welcome: (context) => const WelcomeScreen(),
         AppRoutes.login: (context) => const LoginScreen(),
@@ -104,7 +101,6 @@ class MFUEventifyApp extends StatelessWidget {
   }
 }
 
-// Auth gate: decides where to send the user on app start
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
