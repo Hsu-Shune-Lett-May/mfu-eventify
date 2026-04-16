@@ -112,6 +112,11 @@ class AuthGate extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
+          // Check Hive cache while waiting for Firebase
+          final cachedUser = HiveService().getUser();
+          if (cachedUser != null) {
+            return const HomeScreen(); // ← use cache if available
+          }
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );

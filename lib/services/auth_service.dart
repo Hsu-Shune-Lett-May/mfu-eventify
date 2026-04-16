@@ -89,6 +89,7 @@ class AuthService {
 
   Future<void> signOut() async {
     await _hiveService.clearUser();  // clear Hive cache on logout
+    await _hiveService.clearMyEvents();  // clear my events cache on logout
     await _auth.signOut();
   }
 } 

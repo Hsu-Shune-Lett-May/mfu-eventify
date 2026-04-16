@@ -98,4 +98,11 @@ class HiveService {
     Future<void> unmarkMyEvent(String eventId) async {
       await _myEventsBox.delete(eventId);
     }
+
+    // In hive_service.dart — add this method
+Future<void> clearMyEvents() async {
+  await _myEventsBox.clear();
+}
   }
+
+  

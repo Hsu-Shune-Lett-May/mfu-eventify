@@ -28,12 +28,12 @@ class NotificationService {
     try {
       tz.initializeTimeZones();
 
-      final localTimeZone = await FlutterTimezone.getLocalTimezone();
       try {
-        tz.setLocalLocation(tz.getLocation(localTimeZone.identifier));
+        final String timezoneName = await FlutterTimezone.getLocalTimezone();
+        tz.setLocalLocation(tz.getLocation(timezoneName));
       } catch (e, st) {
         _lastError =
-            'Failed to set timezone ${localTimeZone.identifier}. Falling back to UTC. Error: $e';
+            'Failed to set local timezone. Falling back to UTC. Error: $e';
         debugPrint('NotificationService: $_lastError');
         debugPrint('$st');
         tz.setLocalLocation(tz.UTC);
@@ -68,16 +68,14 @@ class NotificationService {
   }
 
   Future<void> _requestPermissions() async {
-    final androidPlugin =
-        _plugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
 
     await androidPlugin?.requestNotificationsPermission();
     await androidPlugin?.requestExactAlarmsPermission();
 
-    final iosPlugin =
-        _plugin.resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>();
+    final iosPlugin = _plugin.resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin>();
     await iosPlugin?.requestPermissions(
       alert: true,
       badge: true,
@@ -93,9 +91,8 @@ class NotificationService {
       importance: Importance.max,
     );
 
-    final androidPlugin =
-        _plugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(channel);
   }
 
@@ -121,7 +118,8 @@ class NotificationService {
     final scheduledDate = tz.TZDateTime.from(scheduledAt, tz.local);
 
     try {
-      debugPrint('Scheduling reminder: eventId=${event.id}, notificationId=$notificationId, tz=${tz.local.name}, scheduledAt=$scheduledDate');
+      debugPrint(
+          'Scheduling reminder: eventId=${event.id}, notificationId=$notificationId, tz=${tz.local.name}, scheduledAt=$scheduledDate');
 
       await _plugin.zonedSchedule(
         id: notificationId,

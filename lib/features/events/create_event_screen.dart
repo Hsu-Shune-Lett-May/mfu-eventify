@@ -39,8 +39,18 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   String _formatDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
@@ -116,6 +126,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         return;
       }
 
+      // ✅ AFTER
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -123,7 +134,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             backgroundColor: AppColors.primary,
           ),
         );
-        Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home));
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -149,7 +160,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
     switch (index) {
       case 0:
-        Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home));
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
         break;
       case 1:
         Navigator.pushNamed(context, AppRoutes.saved);
@@ -249,8 +260,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                             return PrimaryButton(
                               text: AppConstants.createEventButton,
                               isLoading: provider.isCreatingEvent,
-                              onPressed:
-                                  provider.isCreatingEvent ? null : _handleSubmit,
+                              onPressed: provider.isCreatingEvent
+                                  ? null
+                                  : _handleSubmit,
                             );
                           },
                         ),
@@ -288,7 +300,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           children: [
             IconButton(
               icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-              onPressed: () => Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home)),
+              onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.home),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             ),
@@ -316,7 +328,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.event_note, size: 18, color: AppColors.primary),
+                      Icon(Icons.event_note,
+                          size: 18, color: AppColors.primary),
                       SizedBox(width: 6),
                       Text(
                         AppConstants.myEvents,
@@ -363,7 +376,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today, size: 20, color: AppColors.iconInactive),
+                const Icon(Icons.calendar_today,
+                    size: 20, color: AppColors.iconInactive),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -412,7 +426,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.access_time, size: 20, color: AppColors.iconInactive),
+                const Icon(Icons.access_time,
+                    size: 20, color: AppColors.iconInactive),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
