@@ -1,5 +1,5 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/navigation/app_routes.dart';
@@ -13,6 +13,8 @@ class LandingScreen extends StatefulWidget {
 
 class _LandingScreenState extends State<LandingScreen>
     with TickerProviderStateMixin {
+  static const String _settingsBox = 'app_settings';
+  static const String _termsKey = 'terms_accepted';
   late final AnimationController _entryController;
   late final AnimationController _pulseController;
   late final Animation<double> _logoScale;
@@ -91,8 +93,10 @@ class _LandingScreenState extends State<LandingScreen>
     super.dispose();
   }
 
-  void _navigateToWelcome() {
-    Navigator.pushReplacementNamed(context, AppRoutes.welcome);
+  void _navigateToTerms() {
+    final accepted = Hive.box<bool>(_settingsBox).get(_termsKey) ?? false;
+    final route = accepted ? AppRoutes.login : AppRoutes.terms;
+    Navigator.pushReplacementNamed(context, route);
   }
 
   @override
@@ -330,7 +334,7 @@ class _LandingScreenState extends State<LandingScreen>
                                     ],
                                   ),
                                   child: ElevatedButton(
-                                    onPressed: _navigateToWelcome,
+                                    onPressed: _navigateToTerms,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.transparent,
                                       shadowColor: Colors.transparent,

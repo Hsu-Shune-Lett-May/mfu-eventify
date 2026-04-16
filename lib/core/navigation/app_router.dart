@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../features/landing/landing_screen.dart';
-import '../../features/welcome/welcome_screen.dart';
+import '../../features/terms/terms_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/events/home_screen.dart';
 import '../../features/events/event_detail_screen.dart';
@@ -16,8 +16,8 @@ class AppRouter {
       case AppRoutes.landing:
         return MaterialPageRoute(builder: (_) => const LandingScreen());
 
-      case AppRoutes.welcome:
-        return MaterialPageRoute(builder: (_) => const WelcomeScreen());
+      case AppRoutes.terms:
+        return MaterialPageRoute(builder: (_) => const TermsScreen());
       
       case AppRoutes.login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());

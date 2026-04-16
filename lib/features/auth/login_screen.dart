@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
-          child: SingleChildScrollView(
+          child: Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
               child: Form(

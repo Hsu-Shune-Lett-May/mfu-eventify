@@ -9,7 +9,7 @@ import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/navigation/app_routes.dart';
 import 'features/landing/landing_screen.dart';
-import 'features/welcome/welcome_screen.dart';
+import 'features/terms/terms_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/signup_screen.dart';
 import 'features/auth/forgot_password_screen.dart';
@@ -38,6 +38,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(EventModelAdapter());
   Hive.registerAdapter(UserModelAdapter());
+  await Hive.openBox<bool>('app_settings');
   await HiveService.init();
 
   await SystemChrome.setPreferredOrientations([
@@ -89,7 +90,7 @@ class MFUEventifyApp extends StatelessWidget {
       routes: {
         // ✅ none of these should be '/'
         AppRoutes.landing: (context) => const LandingScreen(),
-        AppRoutes.welcome: (context) => const WelcomeScreen(),
+        AppRoutes.terms: (context) => const TermsScreen(),
         AppRoutes.login: (context) => const LoginScreen(),
         AppRoutes.signup: (context) => const SignupScreen(),
         AppRoutes.forgotPassword: (context) => const ForgotPasswordScreen(),
