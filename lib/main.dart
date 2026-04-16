@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mfu_eventify/models/user_model.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
@@ -36,6 +37,7 @@ void main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(EventModelAdapter());
+  Hive.registerAdapter(UserModelAdapter());
   await HiveService.init();
 
   await SystemChrome.setPreferredOrientations([

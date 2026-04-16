@@ -45,7 +45,9 @@ class _SignupScreenState extends State<SignupScreen> {
     if (!mounted) return;
 
     if (success) {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      await authProvider.signOut();
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -138,7 +140,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 24),
                     PrimaryButton(
-                      text: isLoading ? 'Creating account...' : AppConstants.signup,
+                      text: isLoading
+                          ? 'Creating account...'
+                          : AppConstants.signup,
                       onPressed: isLoading ? null : _handleSignup,
                     ),
                     const SizedBox(height: 32),
@@ -147,7 +151,8 @@ class _SignupScreenState extends State<SignupScreen> {
                       children: [
                         const Text(
                           'Already have an account? ',
-                          style: TextStyle(fontSize: 14, color: AppColors.textTertiary),
+                          style: TextStyle(
+                              fontSize: 14, color: AppColors.textTertiary),
                         ),
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
