@@ -19,9 +19,8 @@ dependencies:
   hive_flutter: ^1.1.0
   provider: ^6.1.5+1
   connectivity_plus: ^7.0.0
-  flutter_local_notifications: ^21.0.0-dev.2
-  timezone: ^0.11.0
-  flutter_timezone: ^5.0.1
+  flutter_local_notifications: ^17.2.4   # was ^21.0.0-dev.2
+  timezone: ^0.9.4                        
   intl: ^0.20.2
   firebase_auth: ^6.4.0
 

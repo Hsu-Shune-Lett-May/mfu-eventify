@@ -168,19 +168,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryLight,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.notifications_outlined,
-                color: AppColors.primary,
-                size: 20,
-              ),
-            ),
+            // Container(
+            //   width: 40,
+            //   height: 40,
+            //   decoration: const BoxDecoration(
+            //     color: AppColors.primaryLight,
+            //     shape: BoxShape.circle,
+            //   ),
+            //   child: const Icon(
+            //     Icons.notifications_outlined,
+            //     color: AppColors.primary,
+            //     size: 20,
+            //   ),
+            // ),
           ],
         ),
       ),

@@ -1,6 +1,6 @@
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../models/event_model.dart';
@@ -18,82 +18,94 @@ class NotificationService {
   static const String _channelDescription =
       'Notifications for scheduled event reminders';
 
-  Future<void> initialize() async {
+  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+    _channelId,
+    _channelName,
+    description: _channelDescription,
+    importance: Importance.max,
+    enableVibration: true,
+    playSound: true,
+    showBadge: true,
+  );
+
+  Future<bool> initialize() async {
+    if (_isInitialized) return true;
+
     if (kIsWeb) {
       _lastError = 'Web platform does not support local notifications.';
       debugPrint('NotificationService: $_lastError');
-      return;
+      return false;
     }
 
     try {
       tz.initializeTimeZones();
-
-      try {
-        final String timezoneName = await FlutterTimezone.getLocalTimezone();
-        tz.setLocalLocation(tz.getLocation(timezoneName));
-      } catch (e, st) {
-        _lastError =
-            'Failed to set local timezone. Falling back to UTC. Error: $e';
-        debugPrint('NotificationService: $_lastError');
-        debugPrint('$st');
-        tz.setLocalLocation(tz.UTC);
-      }
+      tz.setLocalLocation(tz.getLocation('Asia/Bangkok'));
 
       const androidSettings =
           AndroidInitializationSettings('@mipmap/ic_launcher');
       const iosSettings = DarwinInitializationSettings(
-        requestAlertPermission: true,
-        requestBadgePermission: true,
-        requestSoundPermission: true,
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
       );
 
-      await _plugin.initialize(
-        settings: const InitializationSettings(
+      final bool? initialized = await _plugin.initialize(
+        const InitializationSettings(
           android: androidSettings,
           iOS: iosSettings,
         ),
+        onDidReceiveNotificationResponse: _onNotificationResponse,
       );
 
-      await _requestPermissions();
-      await _createNotificationChannel();
-      _isInitialized = true;
+      if (Platform.isAndroid) {
+        await _plugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.createNotificationChannel(_channel);
+      }
+
+      _isInitialized = initialized ?? false;
       _lastError = null;
       debugPrint('NotificationService: initialization complete.');
+      return _isInitialized;
     } catch (e, st) {
       _isInitialized = false;
       _lastError = 'NotificationService initialization failed: $e';
       debugPrint(_lastError);
       debugPrint('$st');
+      return false;
     }
   }
 
-  Future<void> _requestPermissions() async {
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-
-    await androidPlugin?.requestNotificationsPermission();
-    await androidPlugin?.requestExactAlarmsPermission();
-
-    final iosPlugin = _plugin.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
-    await iosPlugin?.requestPermissions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+  void _onNotificationResponse(NotificationResponse response) {
+    debugPrint('Notification tapped: ${response.payload}');
   }
 
-  Future<void> _createNotificationChannel() async {
-    const channel = AndroidNotificationChannel(
-      _channelId,
-      _channelName,
-      description: _channelDescription,
-      importance: Importance.max,
-    );
-
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    await androidPlugin?.createNotificationChannel(channel);
+  Future<bool> requestPermissions() async {
+    try {
+      if (Platform.isAndroid) {
+        final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+        final bool? granted =
+            await androidPlugin?.requestNotificationsPermission();
+        await androidPlugin?.requestExactAlarmsPermission();
+        return granted ?? false;
+      } else if (Platform.isIOS) {
+        final bool? granted = await _plugin
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>()
+            ?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            );
+        return granted ?? false;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error requesting permissions: $e');
+      return false;
+    }
   }
 
   Future<bool> scheduleEventReminder({
@@ -102,9 +114,12 @@ class NotificationService {
     required String reminderLabel,
   }) async {
     if (!_isInitialized) {
-      _lastError = 'NotificationService not initialized.';
-      debugPrint('scheduleEventReminder failed: $_lastError');
-      return false;
+      final initialized = await initialize();
+      if (!initialized) {
+        _lastError = 'NotificationService not initialized.';
+        debugPrint('scheduleEventReminder failed: $_lastError');
+        return false;
+      }
     }
 
     if (scheduledAt.isBefore(DateTime.now())) {
@@ -115,28 +130,40 @@ class NotificationService {
     }
 
     final notificationId = _notificationIdFromEventId(event.id);
-    final scheduledDate = tz.TZDateTime.from(scheduledAt, tz.local);
+    final bangkok = tz.getLocation('Asia/Bangkok');
+    final scheduledDate = tz.TZDateTime.from(scheduledAt, bangkok);
+
+    const notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        _channelId,
+        _channelName,
+        channelDescription: _channelDescription,
+        importance: Importance.max,
+        priority: Priority.max,
+        playSound: true,
+        enableVibration: true,
+        visibility: NotificationVisibility.public,
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
 
     try {
       debugPrint(
-          'Scheduling reminder: eventId=${event.id}, notificationId=$notificationId, tz=${tz.local.name}, scheduledAt=$scheduledDate');
+          'Scheduling reminder: eventId=${event.id}, notificationId=$notificationId, scheduledAt=$scheduledDate');
 
       await _plugin.zonedSchedule(
-        id: notificationId,
-        title: 'Event Reminder',
-        body: '${event.title} starts soon ($reminderLabel before)',
-        scheduledDate: scheduledDate,
-        notificationDetails: const NotificationDetails(
-          android: AndroidNotificationDetails(
-            _channelId,
-            _channelName,
-            channelDescription: _channelDescription,
-            importance: Importance.max,
-            priority: Priority.high,
-          ),
-          iOS: DarwinNotificationDetails(),
-        ),
+        notificationId,
+        'Event Reminder',
+        '${event.title} starts soon ($reminderLabel before)',
+        scheduledDate,
+        notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         payload: event.id,
       );
 
@@ -152,11 +179,12 @@ class NotificationService {
   }
 
   Future<void> cancelReminder(String eventId) async {
-    if (!_isInitialized) {
-      return;
-    }
+    if (!_isInitialized) return;
+    await _plugin.cancel(_notificationIdFromEventId(eventId));
+  }
 
-    await _plugin.cancel(id: _notificationIdFromEventId(eventId));
+  Future<void> cancelAllReminders() async {
+    await _plugin.cancelAll();
   }
 
   int _notificationIdFromEventId(String eventId) {

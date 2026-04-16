@@ -49,6 +49,7 @@ void main() async {
   final firestoreService = FirestoreService();
   final hiveService = HiveService();
   final notificationService = NotificationService();
+  await notificationService.requestPermissions();
   await notificationService.initialize();
 
   final eventRepository = EventRepository(
