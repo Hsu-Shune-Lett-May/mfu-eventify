@@ -5,6 +5,9 @@ import '../../core/constants/app_constants.dart';
 import '../../core/widgets/common/gradient_background.dart';
 import '../../core/navigation/app_routes.dart';
 import '../../providers/event_provider.dart';
+import '../../features/saved_events/saved_events_screen.dart';
+import '../../features/events/create_event_screen.dart';
+import '../../features/settings/settings_screen.dart';
 import 'widgets/event_card.dart';
 import 'widgets/bottom_nav_bar.dart';
 
@@ -22,106 +25,102 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _selectedTab = index;
     });
-
-    switch (index) {
-      case 0:
-        break;
-      case 1:
-        Navigator.pushNamed(context, AppRoutes.saved).then((_) {
-          if (mounted) setState(() { _selectedTab = 0; });
-        });
-        break;
-      case 2:
-        Navigator.pushNamed(context, AppRoutes.create).then((_) {
-          if (mounted) setState(() { _selectedTab = 0; });
-        });
-        break;
-      case 3:
-        Navigator.pushNamed(context, AppRoutes.settings).then((_) {
-          if (mounted) setState(() { _selectedTab = 0; });
-        });
-        break;
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GradientBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: Consumer<EventProvider>(
-                  builder: (context, provider, child) {
-                    if (provider.isLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
-                        ),
-                      );
-                    }
-
-                    if (provider.events.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'No events available',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                      );
-                    }
-
-                    return RefreshIndicator(
-                      color: AppColors.primary,
-                      onRefresh: () => provider.refreshEvents(),
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(24),
-                        itemCount: provider.events.length,
-                        itemBuilder: (context, index) {
-                          final event = provider.events[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: EventCard(
-                              event: event,
-                              reminderStatus:
-                                  event.isReminderSet ? 'Reminder Set' : 'No Reminder',
-                              hasReminder: event.isReminderSet,
-                              onSaveToggle: () {
-                                provider.toggleSaveEvent(event.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      event.isSaved
-                                          ? '"${event.title}" removed from saved'
-                                          : '"${event.title}" saved!',
-                                    ),
-                                    backgroundColor: AppColors.primary,
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              },
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.eventDetail,
-                                  arguments: event,
-                                );
-                              },
+      body: IndexedStack(
+        index: _selectedTab,
+        children: [
+          // Tab 0 — Home
+          GradientBackground(
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: Consumer<EventProvider>(
+                      builder: (context, provider, child) {
+                        if (provider.isLoading) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
                             ),
                           );
-                        },
-                      ),
-                    );
-                  },
-                ),
+                        }
+
+                        if (provider.events.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              'No events available',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          );
+                        }
+
+                        return RefreshIndicator(
+                          color: AppColors.primary,
+                          onRefresh: () => provider.refreshEvents(),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(24),
+                            itemCount: provider.events.length,
+                            itemBuilder: (context, index) {
+                              final event = provider.events[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: EventCard(
+                                  event: event,
+                                  reminderStatus: event.isReminderSet
+                                      ? 'Reminder Set'
+                                      : 'No Reminder',
+                                  hasReminder: event.isReminderSet,
+                                  onSaveToggle: () {
+                                    provider.toggleSaveEvent(event.id);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          event.isSaved
+                                              ? '"${event.title}" removed from saved'
+                                              : '"${event.title}" saved!',
+                                        ),
+                                        backgroundColor: AppColors.primary,
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  },
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      AppRoutes.eventDetail,
+                                      arguments: event,
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+
+          // Tab 1 — Saved
+          const SavedEventsScreen(),
+
+          // Tab 2 — Create
+          const CreateEventScreen(),
+
+          // Tab 3 — Settings
+          const SettingsScreen(),
+        ],
       ),
       bottomNavigationBar: BottomNavBar(
         selectedIndex: _selectedTab,
@@ -146,8 +145,8 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Column(
+          children: const [
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -168,22 +167,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            // Container(
-            //   width: 40,
-            //   height: 40,
-            //   decoration: const BoxDecoration(
-            //     color: AppColors.primaryLight,
-            //     shape: BoxShape.circle,
-            //   ),
-            //   child: const Icon(
-            //     Icons.notifications_outlined,
-            //     color: AppColors.primary,
-            //     size: 20,
-            //   ),
-            // ),
           ],
         ),
       ),
     );
   }
-}
+} 

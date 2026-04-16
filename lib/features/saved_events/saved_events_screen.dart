@@ -91,10 +91,10 @@ class _SavedEventsScreenState extends State<SavedEventsScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(
-        selectedIndex: _selectedTab,
-        onTabSelected: _onTabSelected,
-      ),
+      // bottomNavigationBar: BottomNavBar(
+      //   selectedIndex: _selectedTab,
+      //   onTabSelected: _onTabSelected,
+      // ),
     );
   }
 
@@ -114,12 +114,12 @@ class _SavedEventsScreenState extends State<SavedEventsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
           children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-              onPressed: () => Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home)),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
+            // IconButton(
+            //   icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+            //   onPressed: () => Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home)),
+            //   padding: EdgeInsets.zero,
+            //   constraints: const BoxConstraints(),
+            // ),
             const SizedBox(width: 16),
             const Text(
               AppConstants.savedEvents,

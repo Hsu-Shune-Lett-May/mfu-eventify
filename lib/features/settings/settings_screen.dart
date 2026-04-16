@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:mfu_eventify/features/settings/about_us_page.dart';
+import 'package:mfu_eventify/features/settings/terms_page.dart';
 import 'package:mfu_eventify/services/hive_service.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
@@ -81,10 +83,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(
-        selectedIndex: _selectedTab,
-        onTabSelected: _onTabSelected,
-      ),
+      // bottomNavigationBar: BottomNavBar(
+      //   selectedIndex: _selectedTab,
+      //   onTabSelected: _onTabSelected,
+      // ),
     );
   }
 
@@ -100,19 +102,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Row(
           children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-              onPressed: () =>
-                  Navigator.popUntil(context, ModalRoute.withName(AppRoutes.home)),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            ),
-            const SizedBox(width: 12),
-            const Text(
+            SizedBox(width: 12),
+            Text(
               AppConstants.settings,
               style: TextStyle(
                 fontSize: 20,
@@ -127,22 +122,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildUserProfile() {
-  // Try Hive cache first (works offline), then Firebase Auth
-  final hiveUser = HiveService().getUser();
-  final firebaseUser = FirebaseAuth.instance.currentUser;
+    // Try Hive cache first (works offline), then Firebase Auth
+    final hiveUser = HiveService().getUser();
+    final firebaseUser = FirebaseAuth.instance.currentUser;
 
-  final displayName = hiveUser?.name
-      ?? firebaseUser?.displayName
-      ?? 'MFU Student';
-  final email = hiveUser?.email
-      ?? firebaseUser?.email
-      ?? '';
+    final displayName =
+        hiveUser?.name ?? firebaseUser?.displayName ?? 'MFU Student';
+    final email = hiveUser?.email ?? firebaseUser?.email ?? '';
 
-  final parts = displayName.trim().split(' ');
-  final initials = parts.length >= 2
-      ? '${parts.first[0]}${parts.last[0]}'.toUpperCase()
-      : displayName.substring(0, displayName.length >= 2 ? 2 : 1).toUpperCase();
-
+    final parts = displayName.trim().split(' ');
+    final initials = parts.length >= 2
+        ? '${parts.first[0]}${parts.last[0]}'.toUpperCase()
+        : displayName
+            .substring(0, displayName.length >= 2 ? 2 : 1)
+            .toUpperCase();
 
     return BaseCard(
       child: Row(
@@ -205,13 +198,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onChanged: (val) => setState(() => pushNotifications = val),
           showDivider: true,
         ),
-        SettingsSwitchItem(
-          icon: Icons.email_outlined,
-          title: 'Email Notifications',
-          value: emailNotifications,
-          onChanged: (val) => setState(() => emailNotifications = val),
-          showDivider: true,
-        ),
+        // SettingsSwitchItem(
+        //   icon: Icons.email_outlined,
+        //   title: 'Email Notifications',
+        //   value: emailNotifications,
+        //   onChanged: (val) => setState(() => emailNotifications = val),
+        //   showDivider: true,
+        // ),
         SettingsSwitchItem(
           icon: Icons.alarm,
           title: 'Event Reminders',
@@ -320,13 +313,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SettingsMenuItem(
           icon: Icons.info_outline,
           title: 'About MFU Eventify',
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AboutUsPage(),
+              ),
+            );
+          },
           showDivider: true,
         ),
         SettingsMenuItem(
           icon: null,
           title: 'Terms & Conditions',
-          onTap: () {},
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const TermsAndConditionsPage(),
+              ),
+            );
+          },
           showDivider: false,
         ),
       ],
