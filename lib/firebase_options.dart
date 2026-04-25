@@ -50,12 +50,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAdQKtrQiY1H11sBnqtCe7H7GVQG6iJI-Q',
-    appId: '1:505861036319:web:201e786679b70817ef782a',
-    messagingSenderId: '505861036319',
-    projectId: 'mfu-eventify-fd7d8',
-    authDomain: 'mfu-eventify-fd7d8.firebaseapp.com',
-    storageBucket: 'mfu-eventify-fd7d8.firebasestorage.app',
+    apiKey: 'AIzaSyBxMwy5zewvU6YljRCfIn45wM9mF9LLVeY',
+    appId: '1:877116629744:web:92ac3bdc3f6f5093421835',
+    messagingSenderId: '877116629744',
+    projectId: 'mfu-eventify-v2',
+    authDomain: 'mfu-eventify-v2.firebaseapp.com',
+    storageBucket: 'mfu-eventify-v2.firebasestorage.app',
+    measurementId: 'G-ZQ1EJMMS72',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
